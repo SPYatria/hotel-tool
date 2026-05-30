@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ホテルTikTokツール</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --accent: #ff3b5c;
+    --accent2: #ff8c42;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+    --border: #2a2a3a;
+    --success: #00e5a0;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .header .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+  }
+
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .api-section summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .api-section summary::before { content: '⚙️'; }
+  .api-section[open] summary { color: var(--text); margin-bottom: 12px; }
+  .api-section input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    outline: none;
+  }
+  .api-section input:focus { border-color: var(--accent); }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .input-card label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  .input-card input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-card input[type="text"]:focus { border-color: var(--accent); }
+  .input-card input[type="text"]::placeholder { color: var(--muted); font-weight: 300; }
+
+  /* キャラ選択 */
+  .char-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .char-btn {
+    flex: 1;
+    min-width: 100px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .char-btn:hover { border-color: var(--accent2); }
+  .char-btn.active { border-color: var(--accent); background: rgba(255,59,92,0.08); }
+  .char-icon { font-size: 22px; }
+  .char-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .char-desc { font-size: 10px; color: var(--muted); text-align: center; }
+  .char-btn.active .char-name { color: var(--accent); }
+
+  .btn-generate {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-generate:hover { background: #ff1a3d; transform: scale(1.02); }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .loading.show { display: block; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+  .error-box {
+    display: none;
+    background: rgba(255,59,92,0.12);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: #ff8fa3;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .error-box.show { display: block; }
+
+  .result-section { display: none; }
+  .result-section.show { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .result-hotel-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--accent2);
+  }
+  .result-char-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .btn-copy-all {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-copy-all:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .screens-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .screen-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+
+  .screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .screen-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .screen-title {
+    font-size: 12px;
+    color: var(--muted);
+    flex: 1;
+    margin-left: 10px;
+  }
+  .btn-copy {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .btn-copy:hover { border-color: var(--success); color: var(--success); }
+  .btn-copy.copied { border-color: var(--success); color: var(--success); background: rgba(0,229,160,0.1); }
+
+  .screen-content {
+    padding: 14px 16px;
+    font-size: 15px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    color: #e0e0ee;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">TikTok Hotel Tool</div>
+  <h1>ホテル動画<br>テキスト自動生成</h1>
+</div>
+
+<details class="api-section" id="apiSection">
+  <summary>APIキー設定（初回のみ）</summary>
+  <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+  <div style="margin-top:8px;font-size:12px;color:var(--muted)">入力したらそのまま閉じてOK。次回から自動で読み込まれます。</div>
+</details>
+
+<div class="input-card">
+  <label>ホテル名を入力</label>
+  <div class="input-row">
+    <input type="text" id="hotelName" placeholder="例：アパホテル六本木SIX" />
+    <button class="btn-generate" id="generateBtn" onclick="generateText()">
+      ✦ 生成
+    </button>
+  </div>
+</div>
+
+<div class="input-card">
+  <label>口調キャラを選択</label>
+  <div class="char-select">
+    <button class="char-btn active" data-char="hitagi" onclick="selectChar(this)">
+      <span class="char-icon">🌙</span>
+      <span class="char-name">戦場ヶ原ひたぎ</span>
+      <span class="char-desc">クール・毒舌・知的</span>
+    </button>
+    <button class="char-btn" data-char="traveler" onclick="selectChar(this)">
+      <span class="char-icon">✈️</span>
+      <span class="char-name">旅好き女子</span>
+      <span class="char-desc">テンション高め・共感系</span>
+    </button>
+    <button class="char-btn" data-char="business" onclick="selectChar(this)">
+      <span class="char-icon">💼</span>
+      <span class="char-name">ビジネスウーマン</span>
+      <span class="char-desc">効率重視・端的・刺さる</span>
+    </button>
+  </div>
+</div>
+
+<div class="error-box" id="errorBox"></div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">ホテル情報を調べています...</div>
+</div>
+
+<div class="result-section" id="resultSection">
+  <div class="result-header">
+    <div>
+      <div class="result-hotel-name" id="resultHotelName"></div>
+      <div class="result-char-badge" id="resultCharBadge"></div>
+    </div>
+    <button class="btn-copy-all" onclick="copyAll()">📋 全部コピー</button>
+  </div>
+  <div class="screens-grid" id="screensGrid"></div>
+</div>
+
+<div class="footer">punyopunyo hotel tool v2.0</div>
+
+<script>
+const apiKeyInput = document.getElementById('apiKey');
+const savedKey = localStorage.getItem('anthropic_api_key');
+if (savedKey) apiKeyInput.value = savedKey;
+apiKeyInput.addEventListener('input', () => {
+  localStorage.setItem('anthropic_api_key', apiKeyInput.value);
+});
+
+let selectedChar = 'hitagi';
+
+function selectChar(btn) {
+  document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedChar = btn.dataset.char;
+}
+
+const charProfiles = {
+  hitagi: {
+    name: '戦場ヶ原ひたぎ',
+    prompt: `あなたは「戦場ヶ原ひたぎ」の口調でTikTok動画テキストを書く。
+特徴：クールで知的、毒舌混じりの語り口。感情を抑えつつも本質を突く言い回し。女性視点で書く。語尾はバリエーション豊かに「～なのよ」「～だわ」「～でしょ」「～かしら」「～よね」「～なのよね」「～だけどね」「～ってところね」を自然に混ぜる。体言止めは最小限にして、人が話すような語り口にする。`
+  },
+  traveler: {
+    name: '旅好き女子',
+    prompt: `あなたは旅好きな20代女性の口調でTikTok動画テキストを書く。
+特徴：テンション高め、共感を呼ぶ言葉選び。友達に話しかけるような親しみやすさ。女性視点で書く。語尾はバリエーション豊かに「～だよ」「～なんよ」「～じゃん」「～だよね」「～なんだけど」「～だったりする」「～なんよね」「～すぎる」「～ってなる」「～よね」を自然に混ぜる。体言止めは最小限にして、テンション高めの語り口にする。`
+  },
+  business: {
+    name: 'ビジネスウーマン',
+    prompt: `あなたはできるビジネスウーマンの口調でTikTok動画テキストを書く。
+特徴：無駄がなく端的。数字や事実を効果的に使う。説得力重視。忙しい女性に刺さる言葉。女性視点で書く。語尾はバリエーション豊かに「～なの」「～よ」「～ね」「～だから」「～なのよ」「～じゃない」「～なんだけど」「～てことね」「～でしょ」「～よね」を自然に混ぜる。体言止めは最小限にして、知的でテンポよい語り口にする。`
+  }
+};
+
+const loadingMessages = [
+  'ホテル情報を調べています...',
+  'ファクトチェック中...',
+  'TikTokテキスト生成中...',
+  '画面を組み立てています...'
+];
+
+let loadingInterval;
+
+function startLoading() {
+  let i = 0;
+  const el = document.getElementById('loadingText');
+  el.textContent = loadingMessages[0];
+  loadingInterval = setInterval(() => {
+    i = (i + 1) % loadingMessages.length;
+    el.textContent = loadingMessages[i];
+  }, 2500);
+}
+
+function stopLoading() { clearInterval(loadingInterval); }
+
+async function generateText() {
+  const hotelName = document.getElementById('hotelName').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+
+  if (!hotelName) { showError('ホテル名を入力してください'); return; }
+  if (!apiKey) {
+    document.getElementById('apiSection').open = true;
+    showError('APIキーを入力してください（上の⚙️をタップ）');
+    return;
+  }
+
+  hideError();
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('generateBtn').disabled = true;
+  startLoading();
+
+  const char = charProfiles[selectedChar];
+
+  const prompt = `${char.prompt}
+
+【タスク】
+ホテル名：${hotelName}
+
+まず${hotelName}が2026年現在も営業しているか、最新のサービスや設備を確認してください。
+
+以下のルールで18画面分のテキストを生成してください。
+
+【ルール】
+- 口調は上記キャラクターに徹底して合わせる
+- 句読点（。、！？）は一切使わない
+- 文末は体言止めか改行で終わる
+- SNSのスマホユーザー視点最優先
+- 視聴者が「行きたい」と妄想できる強いパワーワードを使う
+- 各画面は3行
+- 1行は最大12文字以内（絶対に超えない）
+- 文字数の緩急をつける（短い行・長い行を混ぜる）
+- 同じフレーズ・同じ言い回しを18画面で絶対に繰り返さない
+- 類似表現も避け、毎回新鮮な言葉を選ぶ
+- 前置き一切不要、いきなり画面から始める
+
+【構成】
+- 1画面目：冒頭フック（インパクト重視、視聴者を止める一言）
+- 2画面目：ホテル名と概要
+- 3〜18画面目：設備・部屋・サービス・ロケーションなど詳細紹介
+
+【出力形式】
+===SCREEN_1===
+TITLE:冒頭フック
+TEXT:
+（3行のテキスト）
+
+===SCREEN_2===
+TITLE:ホテル概要
+TEXT:
+（3行のテキスト）
+
+（以下18画面まで同様）
+
+必ず18画面全部出力してください。`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `APIエラー: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    parseAndDisplay(hotelName, text);
+
+  } catch (e) {
+    showError('エラー: ' + e.message);
+  } finally {
+    stopLoading();
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('generateBtn').disabled = false;
+  }
+}
+
+function parseAndDisplay(hotelName, rawText) {
+  const screens = [];
+  const blocks = rawText.split(/===SCREEN_\d+===/);
+
+  for (let block of blocks) {
+    block = block.trim();
+    if (!block) continue;
+    const titleMatch = block.match(/TITLE:(.+)/);
+    const textMatch = block.match(/TEXT:\n([\s\S]+)/);
+    if (titleMatch && textMatch) {
+      screens.push({ title: titleMatch[1].trim(), text: textMatch[1].trim() });
+    }
+  }
+
+  if (screens.length === 0) {
+    showError('テキストの解析に失敗しました。もう一度試してください。');
+    return;
+  }
+
+  const char = charProfiles[selectedChar];
+  document.getElementById('resultHotelName').textContent = hotelName;
+  document.getElementById('resultCharBadge').textContent = char.name;
+
+  const grid = document.getElementById('screensGrid');
+  grid.innerHTML = '';
+
+  screens.forEach((screen, i) => {
+    const card = document.createElement('div');
+    card.className = 'screen-card';
+    card.style.animationDelay = `${i * 0.04}s`;
+    card.innerHTML = `
+      <div class="screen-header">
+        <span class="screen-num">SCREEN ${String(i+1).padStart(2,'0')}</span>
+        <span class="screen-title">${escapeHtml(screen.title)}</span>
+        <button class="btn-copy" onclick="copyScreen(this, ${i})">📋 コピー</button>
+      </div>
+      <div class="screen-content" id="screen-text-${i}">${escapeHtml(screen.text)}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('resultSection').classList.add('show');
+  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyScreen(btn, index) {
+  const el = document.getElementById(`screen-text-${index}`);
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    btn.textContent = '✓ コピー完了';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyAll() {
+  const cards = document.querySelectorAll('.screen-content');
+  let all = '';
+  cards.forEach((el, i) => { all += `【画面${i+1}】\n${el.textContent}\n\n`; });
+  navigator.clipboard.writeText(all.trim()).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ コピー完了！';
+    setTimeout(() => { btn.textContent = '📋 全部コピー'; }, 2000);
+  });
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('show');
+}
+
+function hideError() { document.getElementById('errorBox').classList.remove('show'); }
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('hotelName').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') generateText();
+});
+</script>
+</body>
+</html>

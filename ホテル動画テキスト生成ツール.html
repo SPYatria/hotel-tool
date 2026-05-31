@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -449,7 +450,7 @@
 
 
 <div class="hotel-list-section" id="hotelListSection">
-  <div class="hotel-list-header" onclick="toggleHotelList()">
+  <div class="hotel-list-header" onclick="toggleHotelList()" ontouchend="event.preventDefault();toggleHotelList()">
     <label>ホテル一覧から選ぶ</label>
     <span class="hotel-list-toggle">▼</span>
   </div>

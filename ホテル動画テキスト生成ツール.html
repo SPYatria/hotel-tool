@@ -443,7 +443,7 @@
 
 <details class="api-section" id="apiSection">
   <summary>APIキー設定（初回のみ）</summary>
-  <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+  <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
   <div style="margin-top:8px;font-size:12px;color:var(--muted)">入力したらそのまま閉じてOK。次回から自動で読み込まれます。</div>
 </details>
 
@@ -512,7 +512,7 @@
   <div class="screens-grid" id="screensGrid"></div>
 </div>
 
-<div class="footer">punyopunyo hotel tool v2.1</div>
+<div class="footer">punyopunyo hotel tool v3.0 (Gemini)</div>
 
 <script>
 
@@ -669,10 +669,10 @@ document.getElementById('hotelAddInput')?.addEventListener('keydown', e => {
 
 
 const apiKeyInput = document.getElementById('apiKey');
-const savedKey = localStorage.getItem('anthropic_api_key');
+const savedKey = localStorage.getItem('gemini_api_key');
 if (savedKey) apiKeyInput.value = savedKey;
 apiKeyInput.addEventListener('input', () => {
-  localStorage.setItem('anthropic_api_key', apiKeyInput.value);
+  localStorage.setItem('gemini_api_key', apiKeyInput.value);
 });
 
 let selectedChar = 'hitagi';
@@ -784,21 +784,18 @@ TEXT:
 必ず18画面全部出力してください。`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tools: [{ google_search: {} }],
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 4000 }
+        })
+      }
+    );
 
     if (!response.ok) {
       const err = await response.json();
@@ -806,10 +803,11 @@ TEXT:
     }
 
     const data = await response.json();
-    const text = data.content
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('');
+    const text = data.candidates?.[0]?.content?.parts
+      ?.filter(p => p.text)
+      ?.map(p => p.text)
+      ?.join('') || '';
+    if (!text) throw new Error('テキストが生成されませんでした');
     parseAndDisplay(hotelName, text);
 
   } catch (e) {

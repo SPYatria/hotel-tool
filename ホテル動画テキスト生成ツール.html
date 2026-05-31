@@ -325,6 +325,113 @@
     font-size: 11px;
     letter-spacing: 1px;
   }
+
+  /* ホテルリスト */
+  .hotel-list-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .hotel-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .hotel-list-header label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .hotel-list-toggle {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .hotel-list-section.open .hotel-list-toggle {
+    transform: rotate(180deg);
+  }
+  .hotel-list-body {
+    display: none;
+    padding: 0 12px 12px;
+  }
+  .hotel-list-section.open .hotel-list-body {
+    display: block;
+  }
+  .hotel-search {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .hotel-search:focus { border-color: var(--accent); }
+  .hotel-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .hotel-chip {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .hotel-chip:active { border-color: var(--accent); color: var(--accent); background: rgba(255,59,92,0.08); }
+  .hotel-list-edit {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .hotel-add-row {
+    display: flex;
+    gap: 6px;
+  }
+  .hotel-add-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+  }
+  .hotel-add-input:focus { border-color: var(--accent); }
+  .btn-add-hotel {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
 </style>
 </head>
 <body>
@@ -339,6 +446,24 @@
   <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
   <div style="margin-top:8px;font-size:12px;color:var(--muted)">入力したらそのまま閉じてOK。次回から自動で読み込まれます。</div>
 </details>
+
+
+<div class="hotel-list-section" id="hotelListSection">
+  <div class="hotel-list-header" onclick="toggleHotelList()">
+    <label>ホテル一覧から選ぶ</label>
+    <span class="hotel-list-toggle">▼</span>
+  </div>
+  <div class="hotel-list-body">
+    <input type="text" class="hotel-search" id="hotelSearch" placeholder="絞り込み検索..." oninput="filterHotels()" />
+    <div class="hotel-grid" id="hotelGrid"></div>
+    <div class="hotel-list-edit">
+      <div class="hotel-add-row">
+        <input type="text" class="hotel-add-input" id="hotelAddInput" placeholder="ホテル名を追加..." />
+        <button class="btn-add-hotel" onclick="addHotel()">＋ 追加</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="input-card">
   <label>ホテル名を入力</label>
@@ -390,6 +515,159 @@
 <div class="footer">punyopunyo hotel tool v2.1</div>
 
 <script>
+
+// ホテルリスト
+const DEFAULT_HOTELS = [
+  'CINCSホテル',
+  'Cominka Yufuin',
+  'illi rug 浜松町',
+  'illi tria sibuya',
+  'illinoa浜松町',
+  'kyoto logy',
+  'Le Blanche - ル・ブランシュ',
+  'SAILS',
+  'the b 水道橋',
+  'TOTOシーウインド淡路',
+  'tou nisinotoin kyoto',
+  'tune stay kyoto',
+  'WASHU BLUE RESORT 風龍かさご',
+  'XYZスペチアーレ',
+  'アパホテル&リゾート御堂筋本町駅タワー',
+  'アパホテル&リゾート大阪なんば駅タワー',
+  'アパホテル&リゾート大阪梅田駅タワー',
+  'アパホテル&リゾート両国駅タワー',
+  'アパホテル&リゾート六本木駅東',
+  'アパホテル肥後橋',
+  'アパホテル雷門南',
+  'アパホテル六本木SIX',
+  'エスプレッソイースト',
+  'エスプレッソウエスト',
+  'エスプレッソサウス',
+  'エスプレッソサウスII',
+  'エスプレッソセントラル',
+  'エスプレッソナンバエキマエ',
+  'エスプレッソなんばパークス',
+  'おごと温泉　びわ湖花街道',
+  'おもてなしの宿　漠山閣',
+  'くつろぎの宿　美さき',
+  'くれたけイン大阪御堂筋筋本町',
+  'ザ・ワンファイブ京都四条',
+  'たらふく食べて懐に優しい宿　丸書',
+  'トグルホテル水道橋',
+  'にごりの湯',
+  'ネストホテル心斎橋',
+  'パークフロントUSJ',
+  'ハーバーランド万業倶楽部追加',
+  'ハチ北温泉　内湯旅館SASAYA',
+  'ヒラリーズ心斎橋',
+  'ホテルVintage神楽坂',
+  'ホテルグランデ心斎橋',
+  'ホテルトラスティ東京ベイサイド',
+  'ホテルニューオータニ大阪',
+  'ホテルビナリオ　嵯峨嵐山',
+  'ホテルフォルツァ大阪',
+  'ホテルフクラシア大阪ベイ',
+  'ホテルマンデーブレミア西葛西',
+  'ホテルモントレ大阪',
+  'ホテル京阪',
+  'ホテル近鉄ユニバーサル',
+  'マンデープレミア豊洲',
+  'モントレフレール大阪',
+  'レフ関空泉佐野ホテル',
+  '岡山国際ホテル',
+  '花の宿　にしきえ',
+  '割烹旅館志みず',
+  '関空オーシャンフロント',
+  '祇園　御宿　菊湊',
+  '魚の悟丸仙',
+  '京王プレッソイン池袋',
+  '京急EXホテルみなとみらい横浜',
+  '呉竹イン大阪',
+  '黒門クリスタル',
+  '三朝温泉桃園館',
+  '柴山温泉　たかはしや',
+  '宿居　三養荘',
+  '松業家旅館',
+  '城崎温泉　泉翠',
+  '城崎温泉　湯めぐりの宿　錦水',
+  '神戸ハーバーランド万業倶楽部',
+  '星海幽月　夢遊華',
+  '赤羽ホリックホテル',
+  '浅草花園通',
+  '相鉄グランドフレッサ東京ベイ有明',
+  '天橋立温泉　対橋楼',
+  '東京ベイ有明ワシントンホテル',
+  '東山温泉メイプルプラザ',
+  '道頓堀クリスタル',
+  '博多水庭',
+  '兵衛向陽閣',
+  '変なホテル心斎橋',
+  '夕日の宿　龍宮館',
+  '旅館　なかや',
+  '料理旅館　丸茂',
+  '蕾島原別邸壱',
+  '蕾島原別邸弐',
+  '蕾島原別邸参'
+];
+
+function loadHotels() {
+  const saved = localStorage.getItem('hotel_list');
+  return saved ? JSON.parse(saved) : DEFAULT_HOTELS;
+}
+
+function saveHotels(list) {
+  localStorage.setItem('hotel_list', JSON.stringify(list));
+}
+
+function renderHotels(filter = '') {
+  const hotels = loadHotels();
+  const grid = document.getElementById('hotelGrid');
+  const filtered = filter ? hotels.filter(h => h.includes(filter)) : hotels;
+  grid.innerHTML = filtered.map(h => 
+    `<button class="hotel-chip" onclick="selectHotel('${h.replace(/'/g, "\'")}')">${h}</button>`
+  ).join('');
+}
+
+function selectHotel(name) {
+  document.getElementById('hotelName').value = name;
+  toggleHotelList(false);
+}
+
+function toggleHotelList(forceClose) {
+  const section = document.getElementById('hotelListSection');
+  if (forceClose === false) {
+    section.classList.remove('open');
+  } else {
+    section.classList.toggle('open');
+    if (section.classList.contains('open')) {
+      renderHotels();
+    }
+  }
+}
+
+function filterHotels() {
+  const q = document.getElementById('hotelSearch').value;
+  renderHotels(q);
+}
+
+function addHotel() {
+  const input = document.getElementById('hotelAddInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const hotels = loadHotels();
+  if (!hotels.includes(name)) {
+    hotels.push(name);
+    saveHotels(hotels);
+    renderHotels();
+  }
+  input.value = '';
+}
+
+document.getElementById('hotelAddInput')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') addHotel();
+});
+
+
 const apiKeyInput = document.getElementById('apiKey');
 const savedKey = localStorage.getItem('anthropic_api_key');
 if (savedKey) apiKeyInput.value = savedKey;

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ホテルTikTokツール</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap');
@@ -22,28 +22,34 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'Noto Sans JP', sans-serif;
     min-height: 100vh;
-    padding: 24px 16px 80px;
+    padding: 20px 12px 80px;
+    max-width: 100vw;
   }
 
   .header {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
   }
   .header .logo {
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
+    font-size: 10px;
+    letter-spacing: 3px;
     color: var(--accent);
     text-transform: uppercase;
     margin-bottom: 8px;
   }
   .header h1 {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 900;
     background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
     -webkit-background-clip: text;
@@ -55,8 +61,9 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 20px;
+    padding: 14px;
+    margin-bottom: 12px;
+    width: 100%;
   }
   .api-section summary {
     cursor: pointer;
@@ -66,6 +73,7 @@
     align-items: center;
     gap: 8px;
     user-select: none;
+    list-style: none;
   }
   .api-section summary::before { content: '⚙️'; }
   .api-section[open] summary { color: var(--text); margin-bottom: 12px; }
@@ -86,12 +94,13 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
+    padding: 16px;
     margin-bottom: 12px;
+    width: 100%;
   }
   .input-card label {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 2px;
     color: var(--muted);
     margin-bottom: 10px;
@@ -99,47 +108,53 @@
   }
   .input-row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
   }
   .input-card input[type="text"] {
     flex: 1;
+    min-width: 0;
     background: var(--bg);
     border: 2px solid var(--border);
     border-radius: 8px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     color: var(--text);
-    font-size: 16px;
+    font-size: 15px;
     font-family: 'Noto Sans JP', sans-serif;
     font-weight: 700;
     outline: none;
     transition: border-color 0.2s;
+    width: 100%;
   }
   .input-card input[type="text"]:focus { border-color: var(--accent); }
   .input-card input[type="text"]::placeholder { color: var(--muted); font-weight: 300; }
 
   /* キャラ選択 */
   .char-select {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
-    flex-wrap: wrap;
+    width: 100%;
   }
   .char-btn {
-    flex: 1;
-    min-width: 100px;
     background: var(--bg);
     border: 2px solid var(--border);
     border-radius: 10px;
-    padding: 12px 10px;
+    padding: 12px 8px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     transition: all 0.2s;
+    width: 100%;
+  }
+  .char-btn:last-child {
+    grid-column: 1 / -1;
   }
   .char-btn:hover { border-color: var(--accent2); }
   .char-btn.active { border-color: var(--accent); background: rgba(255,59,92,0.08); }
-  .char-icon { font-size: 22px; }
+  .char-icon { font-size: 20px; }
   .char-name { font-size: 12px; font-weight: 700; color: var(--text); }
   .char-desc { font-size: 10px; color: var(--muted); text-align: center; }
   .char-btn.active .char-name { color: var(--accent); }
@@ -149,20 +164,18 @@
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 14px 20px;
+    padding: 12px 16px;
     font-size: 15px;
     font-weight: 700;
     font-family: 'Noto Sans JP', sans-serif;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    flex-shrink: 0;
   }
-  .btn-generate:hover { background: #ff1a3d; transform: scale(1.02); }
-  .btn-generate:active { transform: scale(0.98); }
-  .btn-generate:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+  .btn-generate:hover { background: #ff1a3d; }
+  .btn-generate:active { transform: scale(0.96); }
+  .btn-generate:disabled { background: var(--muted); cursor: not-allowed; }
 
   .loading {
     display: none;
@@ -191,7 +204,7 @@
     padding: 14px 16px;
     color: #ff8fa3;
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
   .error-box.show { display: block; }
 
@@ -204,10 +217,10 @@
     justify-content: space-between;
     margin-bottom: 16px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
   .result-hotel-name {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 900;
     color: var(--accent2);
   }
@@ -217,6 +230,8 @@
     border-radius: 20px;
     border: 1px solid var(--accent);
     color: var(--accent);
+    margin-top: 4px;
+    display: inline-block;
   }
   .btn-copy-all {
     background: var(--surface2);
@@ -228,13 +243,15 @@
     font-family: 'Noto Sans JP', sans-serif;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
   }
   .btn-copy-all:hover { border-color: var(--accent2); color: var(--accent2); }
 
   .screens-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    width: 100%;
   }
 
   .screen-card {
@@ -245,6 +262,7 @@
     animation: slideIn 0.3s ease forwards;
     opacity: 0;
     transform: translateY(10px);
+    width: 100%;
   }
   @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
 
@@ -252,49 +270,52 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
+    padding: 10px 12px;
     background: var(--surface2);
     border-bottom: 1px solid var(--border);
+    gap: 6px;
   }
   .screen-num {
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--accent);
     font-weight: 700;
     letter-spacing: 1px;
+    flex-shrink: 0;
   }
   .screen-title {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     flex: 1;
-    margin-left: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .btn-copy {
     background: transparent;
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 5px 12px;
+    padding: 5px 10px;
     color: var(--muted);
     font-size: 12px;
     font-family: 'Noto Sans JP', sans-serif;
     cursor: pointer;
     transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
     white-space: nowrap;
+    flex-shrink: 0;
   }
-  .btn-copy:hover { border-color: var(--success); color: var(--success); }
+  .btn-copy:active { border-color: var(--success); color: var(--success); background: rgba(0,229,160,0.1); }
   .btn-copy.copied { border-color: var(--success); color: var(--success); background: rgba(0,229,160,0.1); }
 
   .screen-content {
-    padding: 14px 16px;
+    padding: 14px 14px;
     font-size: 15px;
-    line-height: 1.9;
+    line-height: 2;
     white-space: pre-wrap;
     font-weight: 400;
     letter-spacing: 0.5px;
     color: #e0e0ee;
+    word-break: break-all;
   }
 
   .footer {
@@ -315,7 +336,7 @@
 
 <details class="api-section" id="apiSection">
   <summary>APIキー設定（初回のみ）</summary>
-  <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+  <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
   <div style="margin-top:8px;font-size:12px;color:var(--muted)">入力したらそのまま閉じてOK。次回から自動で読み込まれます。</div>
 </details>
 
@@ -323,9 +344,7 @@
   <label>ホテル名を入力</label>
   <div class="input-row">
     <input type="text" id="hotelName" placeholder="例：アパホテル六本木SIX" />
-    <button class="btn-generate" id="generateBtn" onclick="generateText()">
-      ✦ 生成
-    </button>
+    <button class="btn-generate" id="generateBtn" onclick="generateText()">✦ 生成</button>
   </div>
 </div>
 
@@ -368,7 +387,7 @@
   <div class="screens-grid" id="screensGrid"></div>
 </div>
 
-<div class="footer">punyopunyo hotel tool v2.0</div>
+<div class="footer">punyopunyo hotel tool v2.1</div>
 
 <script>
 const apiKeyInput = document.getElementById('apiKey');
@@ -456,7 +475,7 @@ async function generateText() {
 【ルール】
 - 口調は上記キャラクターに徹底して合わせる
 - 句読点（。、！？）は一切使わない
-- 文末は体言止めか改行で終わる
+- 文末は語り口調の語尾か改行で終わる
 - SNSのスマホユーザー視点最優先
 - 視聴者が「行きたい」と妄想できる強いパワーワードを使う
 - 各画面は3行
@@ -568,7 +587,7 @@ function parseAndDisplay(hotelName, rawText) {
 function copyScreen(btn, index) {
   const el = document.getElementById(`screen-text-${index}`);
   navigator.clipboard.writeText(el.textContent).then(() => {
-    btn.textContent = '✓ コピー完了';
+    btn.textContent = '✓ 完了';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '📋 コピー'; btn.classList.remove('copied'); }, 2000);
   });
@@ -580,7 +599,7 @@ function copyAll() {
   cards.forEach((el, i) => { all += `【画面${i+1}】\n${el.textContent}\n\n`; });
   navigator.clipboard.writeText(all.trim()).then(() => {
     const btn = event.target;
-    btn.textContent = '✓ コピー完了！';
+    btn.textContent = '✓ 完了！';
     setTimeout(() => { btn.textContent = '📋 全部コピー'; }, 2000);
   });
 }

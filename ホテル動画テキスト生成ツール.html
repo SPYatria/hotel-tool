@@ -516,6 +516,51 @@
 
 <script>
 
+// ============================================================
+// フレーズ時限付き禁止管理
+// ============================================================
+const PHRASE_LIMIT = 10;
+
+function getPhraseLedger() {
+  try {
+    const saved = localStorage.getItem('phrase_ledger');
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
+
+function savePhraseLedger(ledger) {
+  localStorage.setItem('phrase_ledger', JSON.stringify(ledger));
+}
+
+function recordPhrases(text) {
+  const patterns = [
+    '神ホテル', '最高すぎ', 'ヤバい', '神すぎ', '天国', '絶対行って',
+    '泣きそう', '感動した', '一生忘れない', '人生変わる', '別世界',
+    '夢みたい', '信じられない', '次元が違う', 'レベチ', '沼った'
+  ];
+  const ledger = getPhraseLedger();
+  const now = Date.now();
+  patterns.forEach(p => {
+    if (text.includes(p)) {
+      if (!ledger[p]) ledger[p] = [];
+      ledger[p].push(now);
+    }
+  });
+  savePhraseLedger(ledger);
+}
+
+function getUsedPhrases() {
+  const ledger = getPhraseLedger();
+  const banned = [];
+  Object.entries(ledger).forEach(([phrase, times]) => {
+    if (times.length > 0 && times.length < PHRASE_LIMIT) {
+      banned.push(phrase);
+    }
+  });
+  return banned.slice(0, 30);
+}
+
+
 // ホテルリスト
 const DEFAULT_HOTELS = [
   'CINCSホテル',

@@ -446,8 +446,18 @@ async function generateText() {
     }
 
     const data = await res.json();
-    const text = (data.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
-    if (!text) throw new Error('テキストが生成されませんでした');
+    console.log('Gemini response:', JSON.stringify(data).substring(0, 500));
+    let text = '';
+    if (data.candidates && data.candidates.length > 0) {
+      const cand = data.candidates[0];
+      if (cand.content && cand.content.parts) {
+        text = cand.content.parts.filter(p => p.text).map(p => p.text).join('');
+      }
+    }
+    if (!text) {
+      console.log('Full response:', JSON.stringify(data));
+      throw new Error('テキストが生成されませんでした');
+    }
 
     parseAndDisplay(hotelName, text);
     recordPhrases(text);

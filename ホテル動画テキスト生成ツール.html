@@ -6,432 +6,78 @@
 <title>ホテルTikTokツール</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap');
-
   :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c28;
-    --accent: #ff3b5c;
-    --accent2: #ff8c42;
-    --text: #f0f0f5;
-    --muted: #6b6b80;
-    --border: #2a2a3a;
-    --success: #00e5a0;
-    --radius: 12px;
+    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c28;
+    --accent: #ff3b5c; --accent2: #ff8c42; --text: #f0f0f5;
+    --muted: #6b6b80; --border: #2a2a3a; --success: #00e5a0; --radius: 12px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    width: 100%;
-    overflow-x: hidden;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans JP', sans-serif;
-    min-height: 100vh;
-    padding: 20px 12px 80px;
-    max-width: 100vw;
-  }
-
-  .header {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .header .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .header h1 {
-    font-size: 24px;
-    font-weight: 900;
-    background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.2;
-  }
-
-  .api-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 12px;
-    width: 100%;
-  }
-  .api-section summary {
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-    list-style: none;
-  }
-  .api-section summary::before { content: '⚙️'; }
+  html, body { width: 100%; overflow-x: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; padding: 20px 12px 80px; }
+  .header { text-align: center; margin-bottom: 28px; }
+  .logo { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--accent); margin-bottom: 8px; }
+  h1 { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; width: 100%; }
+  .card label { display: block; font-size: 11px; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; }
+  .api-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .api-section summary { cursor: pointer; font-size: 13px; color: var(--muted); list-style: none; }
+  .api-section summary::before { content: '⚙️ '; }
   .api-section[open] summary { color: var(--text); margin-bottom: 12px; }
-  .api-section input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Space Mono', monospace;
-    outline: none;
-  }
-  .api-section input:focus { border-color: var(--accent); }
-
-  .input-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 12px;
-    width: 100%;
-  }
-  .input-card label {
-    display: block;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .input-row {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-  }
-  .input-card input[type="text"] {
-    flex: 1;
-    min-width: 0;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-weight: 700;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  .input-card input[type="text"]:focus { border-color: var(--accent); }
-  .input-card input[type="text"]::placeholder { color: var(--muted); font-weight: 300; }
-
-  /* キャラ選択 */
-  .char-select {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-  }
-  .char-btn {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 8px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.2s;
-    width: 100%;
-  }
-  .char-btn:last-child {
-    grid-column: 1 / -1;
-  }
-  .char-btn:hover { border-color: var(--accent2); }
+  .api-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 13px; outline: none; }
+  .api-input:focus { border-color: var(--accent); }
+  .hotel-list-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .hotel-list-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .hotel-list-header label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; cursor: pointer; pointer-events: none; }
+  .hotel-list-toggle { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
+  .hotel-list-section.open .hotel-list-toggle { transform: rotate(180deg); }
+  .hotel-list-body { display: none; padding: 0 12px 12px; }
+  .hotel-list-section.open .hotel-list-body { display: block; }
+  .hotel-search { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; margin-bottom: 10px; }
+  .hotel-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .hotel-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .hotel-chip:hover, .hotel-chip:active { border-color: var(--accent); color: var(--accent); background: rgba(255,59,92,0.08); }
+  .hotel-add-row { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .hotel-add-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .btn-add { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .input-row { display: flex; gap: 8px; }
+  .hotel-input { flex: 1; min-width: 0; background: var(--bg); border: 2px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-size: 15px; font-weight: 700; outline: none; transition: border-color 0.2s; }
+  .hotel-input:focus { border-color: var(--accent); }
+  .hotel-input::placeholder { color: var(--muted); font-weight: 300; }
+  .char-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .char-btn { background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 12px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; }
+  .char-btn:last-child { grid-column: 1 / -1; }
   .char-btn.active { border-color: var(--accent); background: rgba(255,59,92,0.08); }
   .char-icon { font-size: 20px; }
   .char-name { font-size: 12px; font-weight: 700; color: var(--text); }
   .char-desc { font-size: 10px; color: var(--muted); text-align: center; }
   .char-btn.active .char-name { color: var(--accent); }
-
-  .btn-generate {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .btn-generate:hover { background: #ff1a3d; }
-  .btn-generate:active { transform: scale(0.96); }
+  .btn-generate { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 12px 16px; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
   .btn-generate:disabled { background: var(--muted); cursor: not-allowed; }
-
-  .loading {
-    display: none;
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-  }
+  .loading { display: none; text-align: center; padding: 40px 20px; color: var(--muted); }
   .loading.show { display: block; }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
-
-  .error-box {
-    display: none;
-    background: rgba(255,59,92,0.12);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    color: #ff8fa3;
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
+  .error-box { display: none; background: rgba(255,59,92,0.12); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px 16px; color: #ff8fa3; font-size: 14px; margin-bottom: 12px; }
   .error-box.show { display: block; }
-
   .result-section { display: none; }
   .result-section.show { display: block; }
-
-  .result-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .result-hotel-name {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--accent2);
-  }
-  .result-char-badge {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    margin-top: 4px;
-    display: inline-block;
-  }
-  .btn-copy-all {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-    color: var(--text);
-    font-size: 12px;
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-copy-all:hover { border-color: var(--accent2); color: var(--accent2); }
-
-  .screens-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-
-  .screen-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    animation: slideIn 0.3s ease forwards;
-    opacity: 0;
-    transform: translateY(10px);
-    width: 100%;
-  }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .result-hotel-name { font-size: 18px; font-weight: 900; color: var(--accent2); }
+  .result-char-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--accent); color: var(--accent); display: inline-block; margin-top: 4px; }
+  .btn-copy-all { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text); font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .screens-grid { display: flex; flex-direction: column; gap: 10px; }
+  .screen-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: slideIn 0.3s ease forwards; opacity: 0; transform: translateY(10px); }
   @keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
-
-  .screen-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    gap: 6px;
-  }
-  .screen-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--accent);
-    font-weight: 700;
-    letter-spacing: 1px;
-    flex-shrink: 0;
-  }
-  .screen-title {
-    font-size: 11px;
-    color: var(--muted);
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .btn-copy {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 10px;
-    color: var(--muted);
-    font-size: 12px;
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .btn-copy:active { border-color: var(--success); color: var(--success); background: rgba(0,229,160,0.1); }
+  .screen-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); gap: 6px; }
+  .screen-num { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .screen-title { font-size: 11px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-copy { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--muted); font-size: 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .btn-copy.copied { border-color: var(--success); color: var(--success); background: rgba(0,229,160,0.1); }
-
-  .screen-content {
-    padding: 14px 14px;
-    font-size: 15px;
-    line-height: 2;
-    white-space: pre-wrap;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-    color: #e0e0ee;
-    word-break: break-all;
-  }
-
-  .footer {
-    text-align: center;
-    margin-top: 40px;
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 1px;
-  }
-
-  /* ホテルリスト */
-  .hotel-list-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 12px;
-    overflow: hidden;
-  }
-  .hotel-list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .hotel-list-header label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .hotel-list-toggle {
-    font-size: 12px;
-    color: var(--muted);
-    transition: transform 0.2s;
-  }
-  .hotel-list-section.open .hotel-list-toggle {
-    transform: rotate(180deg);
-  }
-  .hotel-list-body {
-    display: none;
-    padding: 0 12px 12px;
-  }
-  .hotel-list-section.open .hotel-list-body {
-    display: block;
-  }
-  .hotel-search {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Noto Sans JP', sans-serif;
-    outline: none;
-    margin-bottom: 10px;
-  }
-  .hotel-search:focus { border-color: var(--accent); }
-  .hotel-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .hotel-chip {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 12px;
-    color: var(--text);
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .hotel-chip:active { border-color: var(--accent); color: var(--accent); background: rgba(255,59,92,0.08); }
-  .hotel-list-edit {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
-  .hotel-add-row {
-    display: flex;
-    gap: 6px;
-  }
-  .hotel-add-input {
-    flex: 1;
-    min-width: 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Noto Sans JP', sans-serif;
-    outline: none;
-  }
-  .hotel-add-input:focus { border-color: var(--accent); }
-  .btn-add-hotel {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 12px;
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
+  .screen-content { padding: 14px; font-size: 15px; line-height: 2; white-space: pre-wrap; color: #e0e0ee; word-break: break-all; }
+  .price-loading { color: var(--muted); font-size: 13px; }
+  .footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 11px; }
 </style>
 </head>
 <body>
@@ -443,50 +89,47 @@
 
 <details class="api-section" id="apiSection">
   <summary>APIキー設定（初回のみ）</summary>
-  <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
-  <div style="margin-top:8px;font-size:12px;color:var(--muted)">入力したらそのまま閉じてOK。次回から自動で読み込まれます。</div>
+  <input type="password" class="api-input" id="apiKey" placeholder="AIza..." autocomplete="off" />
+  <div style="margin-top:8px;font-size:12px;color:var(--muted)">Gemini APIキーを入力。次回から自動読み込みされます。</div>
 </details>
 
-
 <div class="hotel-list-section" id="hotelListSection">
-  <div class="hotel-list-header" onclick="toggleHotelList()" ontouchend="event.preventDefault();toggleHotelList()">
+  <div class="hotel-list-header" id="hotelListHeader">
     <label>ホテル一覧から選ぶ</label>
-    <span class="hotel-list-toggle">▼</span>
+    <span class="hotel-list-toggle" id="hotelToggleIcon">▼</span>
   </div>
-  <div class="hotel-list-body">
-    <input type="text" class="hotel-search" id="hotelSearch" placeholder="絞り込み検索..." oninput="filterHotels()" />
+  <div class="hotel-list-body" id="hotelListBody">
+    <input type="text" class="hotel-search" id="hotelSearch" placeholder="絞り込み検索..." />
     <div class="hotel-grid" id="hotelGrid"></div>
-    <div class="hotel-list-edit">
-      <div class="hotel-add-row">
-        <input type="text" class="hotel-add-input" id="hotelAddInput" placeholder="ホテル名を追加..." />
-        <button class="btn-add-hotel" onclick="addHotel()">＋ 追加</button>
-      </div>
+    <div class="hotel-add-row">
+      <input type="text" class="hotel-add-input" id="hotelAddInput" placeholder="ホテル名を追加..." />
+      <button class="btn-add" id="hotelAddBtn">＋ 追加</button>
     </div>
   </div>
 </div>
 
-<div class="input-card">
+<div class="card">
   <label>ホテル名を入力</label>
   <div class="input-row">
-    <input type="text" id="hotelName" placeholder="例：アパホテル六本木SIX" />
-    <button class="btn-generate" id="generateBtn" onclick="generateText()">✦ 生成</button>
+    <input type="text" class="hotel-input" id="hotelName" placeholder="例：アパホテル六本木SIX" />
+    <button class="btn-generate" id="generateBtn">✦ 生成</button>
   </div>
 </div>
 
-<div class="input-card">
+<div class="card">
   <label>口調キャラを選択</label>
   <div class="char-select">
-    <button class="char-btn active" data-char="hitagi" onclick="selectChar(this)">
+    <button class="char-btn active" data-char="hitagi" id="charHitagi">
       <span class="char-icon">🌙</span>
       <span class="char-name">戦場ヶ原ひたぎ</span>
       <span class="char-desc">クール・毒舌・知的</span>
     </button>
-    <button class="char-btn" data-char="traveler" onclick="selectChar(this)">
+    <button class="char-btn" data-char="traveler" id="charTraveler">
       <span class="char-icon">✈️</span>
       <span class="char-name">旅好き女子</span>
       <span class="char-desc">テンション高め・共感系</span>
     </button>
-    <button class="char-btn" data-char="business" onclick="selectChar(this)">
+    <button class="char-btn" data-char="business" id="charBusiness">
       <span class="char-icon">💼</span>
       <span class="char-name">ビジネスウーマン</span>
       <span class="char-desc">効率重視・端的・刺さる</span>
@@ -507,272 +150,103 @@
       <div class="result-hotel-name" id="resultHotelName"></div>
       <div class="result-char-badge" id="resultCharBadge"></div>
     </div>
-    <button class="btn-copy-all" onclick="copyAll()">📋 全部コピー</button>
+    <button class="btn-copy-all" id="copyAllBtn">📋 全部コピー</button>
   </div>
   <div class="screens-grid" id="screensGrid"></div>
 </div>
 
-<div class="footer">punyopunyo hotel tool v3.0 (Gemini)</div>
+<div class="footer">punyopunyo hotel tool v4.0 (Gemini)</div>
 
 <script>
-
+// ============================================================
+// APIキー
+// ============================================================
+const apiKeyEl = document.getElementById('apiKey');
+const savedKey = localStorage.getItem('gemini_api_key');
+if (savedKey) apiKeyEl.value = savedKey;
+apiKeyEl.addEventListener('input', () => localStorage.setItem('gemini_api_key', apiKeyEl.value));
 
 // ============================================================
-// 料金検索（裏で並行実行）
-// ============================================================
-async function fetchPrice(hotelName, checkIn, checkOut, apiKey, char) {
-  const priceCard = document.getElementById('priceCard');
-  if (priceCard) {
-    priceCard.innerHTML = `
-      <div class="screen-header">
-        <span class="screen-num">SCREEN 18</span>
-        <span class="screen-title">料金情報</span>
-        <span style="font-size:11px;color:var(--muted)">🔍 検索中...</span>
-      </div>
-      <div class="screen-content" style="color:var(--muted);font-size:13px">料金を検索しています...</div>
-    `;
-    priceCard.style.display = 'block';
-  }
-
-  try {
-    const pricePrompt = `じゃらん・楽天トラベル・Booking.comなどで「${hotelName}」の${checkIn}チェックイン${checkOut}チェックアウト1名の最安値料金を検索してください。料金を必ず数字で返してください。料金のみを「PRICE:12000」のような形式で返してください。見つからない場合は「PRICE:不明」と返してください。`;
-
-    const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tools: [{ google_search: {} }],
-          contents: [{ role: 'user', parts: [{ text: pricePrompt }] }],
-          generationConfig: { maxOutputTokens: 200 }
-        })
-      }
-    );
-
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.filter(p => p.text)?.map(p => p.text)?.join('') || '';
-    const match = text.match(/PRICE:([^\s\n]+)/);
-]+)/);
-    const price = match ? match[1] : '不明';
-
-    const charKey = char.name === '戦場ヶ原ひたぎ' ? 'hitagi' : char.name === '旅好き女子' ? 'traveler' : 'business';
-    const endings = {
-      hitagi: { price: 'だったわ', link: '確認なさい' },
-      traveler: { price: 'だったよ！', link: '確認してね！' },
-      business: { price: 'よ', link: '確認して' }
-    };
-    const end = endings[charKey];
-
-    let priceText;
-    if (price === '不明') {
-      priceText = '料金は公式サイトで
-確認してみてね
-最新価格はリンクから' + end.link;
-    } else {
-      priceText = '平日宿泊で一人' + price + '円' + end.price + '
-（料金は空室状況で変動します）
-最新価格はリンクから' + end.link;
-    }
-
-    if (priceCard) {
-      priceCard.innerHTML = '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><button class="btn-copy" onclick="copyPriceScreen(this)">📋 コピー</button></div><div class="screen-content" id="price-text">' + escapeHtml(priceText) + '</div>';
-    }
-  } catch(e) {
-    if (priceCard) {
-      priceCard.innerHTML = '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span></div><div class="screen-content" style="color:var(--muted);font-size:13px">料金の取得に失敗しました</div>';
-    }
-  }
-}
-
-function copyPriceScreen(btn) {
-  const el = document.getElementById('price-text');
-  if (!el) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
-    btn.textContent = '✓ 完了';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 コピー'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-// ============================================================
-// フレーズ時限付き禁止管理
-// ============================================================
-const PHRASE_LIMIT = 10;
-
-function getPhraseLedger() {
-  try {
-    const saved = localStorage.getItem('phrase_ledger');
-    return saved ? JSON.parse(saved) : {};
-  } catch { return {}; }
-}
-
-function savePhraseLedger(ledger) {
-  localStorage.setItem('phrase_ledger', JSON.stringify(ledger));
-}
-
-function recordPhrases(text) {
-  const patterns = [
-    '神ホテル', '最高すぎ', 'ヤバい', '神すぎ', '天国', '絶対行って',
-    '泣きそう', '感動した', '一生忘れない', '人生変わる', '別世界',
-    '夢みたい', '信じられない', '次元が違う', 'レベチ', '沼った'
-  ];
-  const ledger = getPhraseLedger();
-  const now = Date.now();
-  patterns.forEach(p => {
-    if (text.includes(p)) {
-      if (!ledger[p]) ledger[p] = [];
-      ledger[p].push(now);
-    }
-  });
-  savePhraseLedger(ledger);
-}
-
-function getUsedPhrases() {
-  const ledger = getPhraseLedger();
-  const banned = [];
-  Object.entries(ledger).forEach(([phrase, times]) => {
-    if (times.length > 0 && times.length < PHRASE_LIMIT) {
-      banned.push(phrase);
-    }
-  });
-  return banned.slice(0, 30);
-}
-
-
 // ホテルリスト
+// ============================================================
 const DEFAULT_HOTELS = [
-  'CINCSホテル',
-  'Cominka Yufuin',
-  'illi rug 浜松町',
-  'illi tria sibuya',
-  'illinoa浜松町',
-  'kyoto logy',
-  'Le Blanche - ル・ブランシュ',
-  'SAILS',
-  'the b 水道橋',
-  'TOTOシーウインド淡路',
-  'tou nisinotoin kyoto',
-  'tune stay kyoto',
-  'WASHU BLUE RESORT 風龍かさご',
-  'XYZスペチアーレ',
-  'アパホテル&リゾート御堂筋本町駅タワー',
-  'アパホテル&リゾート大阪なんば駅タワー',
-  'アパホテル&リゾート大阪梅田駅タワー',
-  'アパホテル&リゾート両国駅タワー',
-  'アパホテル&リゾート六本木駅東',
-  'アパホテル肥後橋',
-  'アパホテル雷門南',
-  'アパホテル六本木SIX',
-  'エスプレッソイースト',
-  'エスプレッソウエスト',
-  'エスプレッソサウス',
-  'エスプレッソサウスII',
-  'エスプレッソセントラル',
-  'エスプレッソナンバエキマエ',
-  'エスプレッソなんばパークス',
-  'おごと温泉　びわ湖花街道',
-  'おもてなしの宿　漠山閣',
-  'くつろぎの宿　美さき',
-  'くれたけイン大阪御堂筋筋本町',
-  'ザ・ワンファイブ京都四条',
-  'たらふく食べて懐に優しい宿　丸書',
-  'トグルホテル水道橋',
-  'にごりの湯',
-  'ネストホテル心斎橋',
-  'パークフロントUSJ',
-  'ハーバーランド万業倶楽部追加',
-  'ハチ北温泉　内湯旅館SASAYA',
-  'ヒラリーズ心斎橋',
-  'ホテルVintage神楽坂',
-  'ホテルグランデ心斎橋',
-  'ホテルトラスティ東京ベイサイド',
-  'ホテルニューオータニ大阪',
-  'ホテルビナリオ　嵯峨嵐山',
-  'ホテルフォルツァ大阪',
-  'ホテルフクラシア大阪ベイ',
-  'ホテルマンデーブレミア西葛西',
-  'ホテルモントレ大阪',
-  'ホテル京阪',
-  'ホテル近鉄ユニバーサル',
-  'マンデープレミア豊洲',
-  'モントレフレール大阪',
-  'レフ関空泉佐野ホテル',
-  '岡山国際ホテル',
-  '花の宿　にしきえ',
-  '割烹旅館志みず',
-  '関空オーシャンフロント',
-  '祇園　御宿　菊湊',
-  '魚の悟丸仙',
-  '京王プレッソイン池袋',
-  '京急EXホテルみなとみらい横浜',
-  '呉竹イン大阪',
-  '黒門クリスタル',
-  '三朝温泉桃園館',
-  '柴山温泉　たかはしや',
-  '宿居　三養荘',
-  '松業家旅館',
-  '城崎温泉　泉翠',
-  '城崎温泉　湯めぐりの宿　錦水',
-  '神戸ハーバーランド万業倶楽部',
-  '星海幽月　夢遊華',
-  '赤羽ホリックホテル',
-  '浅草花園通',
-  '相鉄グランドフレッサ東京ベイ有明',
-  '天橋立温泉　対橋楼',
-  '東京ベイ有明ワシントンホテル',
-  '東山温泉メイプルプラザ',
-  '道頓堀クリスタル',
-  '博多水庭',
-  '兵衛向陽閣',
-  '変なホテル心斎橋',
-  '夕日の宿　龍宮館',
-  '旅館　なかや',
-  '料理旅館　丸茂',
-  '蕾島原別邸壱',
-  '蕾島原別邸弐',
-  '蕾島原別邸参'
+  'CINCSホテル', 'Cominka Yufuin', 'illi rug 浜松町', 'illi tria sibuya',
+  'illinoa浜松町', 'kyoto logy', 'Le Blanche - ル・ブランシュ', 'SAILS',
+  'the b 水道橋', 'TOTOシーウインド淡路', 'tou nisinotoin kyoto', 'tune stay kyoto',
+  'WASHU BLUE RESORT 風龍かさご', 'XYZスペチアーレ',
+  'アパホテル&リゾート御堂筋本町駅タワー', 'アパホテル&リゾート大阪なんば駅タワー',
+  'アパホテル&リゾート大阪梅田駅タワー', 'アパホテル&リゾート両国駅タワー',
+  'アパホテル&リゾート六本木駅東', 'アパホテル肥後橋', 'アパホテル雷門南',
+  'アパホテル六本木SIX', 'エスプレッソイースト', 'エスプレッソウエスト',
+  'エスプレッソサウス', 'エスプレッソサウスII', 'エスプレッソセントラル',
+  'エスプレッソナンバエキマエ', 'エスプレッソなんばパークス',
+  'おごと温泉　びわ湖花街道', 'おもてなしの宿　漠山閣', 'くつろぎの宿　美さき',
+  'くれたけイン大阪御堂筋筋本町', 'ザ・ワンファイブ京都四条',
+  'たらふく食べて懐に優しい宿　丸善', 'トグルホテル水道橋',
+  'にごりの湯', 'ネストホテル心斎橋', 'パークフロントUSJ',
+  'ハーバーランド万業倶楽部', 'ハチ北温泉　内湯旅館SASAYA',
+  'ヒラリーズ心斎橋', 'ホテルVintage神楽坂', 'ホテルグランデ心斎橋',
+  'ホテルトラスティ東京ベイサイド', 'ホテルニューオータニ大阪',
+  'ホテルビナリオ　嵯峨嵐山', 'ホテルフォルツァ大阪',
+  'ホテルフクラシア大阪ベイ', 'ホテルマンデーブレミア西葛西',
+  'ホテルモントレ大阪', 'ホテル京阪', 'ホテル近鉄ユニバーサル',
+  'マンデープレミア豊洲', 'モントレフレール大阪', 'レフ関空泉佐野ホテル',
+  '岡山国際ホテル', '花の宿　にしきえ', '割烹旅館志みず', '関空オーシャンフロント',
+  '祇園　御宿　菊湊', '魚の悟丸仙', '京王プレッソイン池袋',
+  '京急EXホテルみなとみらい横浜', '呉竹イン大阪', '黒門クリスタル',
+  '三朝温泉桃園館', '柴山温泉　たかはしや', '宿居　三養荘', '松業家旅館',
+  '城崎温泉　泉翠', '城崎温泉　湯めぐりの宿　錦水',
+  '神戸ハーバーランド万業倶楽部', '星海幽月　夢遊華', '赤羽ホリックホテル',
+  '浅草花園通', '相鉄グランドフレッサ東京ベイ有明', '天橋立温泉　対橋楼',
+  '東京ベイ有明ワシントンホテル', '東山温泉メイプルプラザ', '道頓堀クリスタル',
+  '博多水庭', '兵衛向陽閣', '変なホテル心斎橋',
+  '夕日の宿　龍宮館', '旅館　なかや', '料理旅館　丸茂',
+  '蕾島原別邸壱', '蕾島原別邸弐', '蕾島原別邸参'
 ];
 
 function loadHotels() {
-  const saved = localStorage.getItem('hotel_list');
-  return saved ? JSON.parse(saved) : DEFAULT_HOTELS;
+  try {
+    const saved = localStorage.getItem('hotel_list');
+    return saved ? JSON.parse(saved) : DEFAULT_HOTELS;
+  } catch { return DEFAULT_HOTELS; }
 }
 
 function saveHotels(list) {
   localStorage.setItem('hotel_list', JSON.stringify(list));
 }
 
-function renderHotels(filter = '') {
+function renderHotels(filter) {
   const hotels = loadHotels();
   const grid = document.getElementById('hotelGrid');
   const filtered = filter ? hotels.filter(h => h.includes(filter)) : hotels;
-  grid.innerHTML = filtered.map(h => 
-    `<button class="hotel-chip" onclick="selectHotel('${h.replace(/'/g, "\'")}')">${h}</button>`
+  grid.innerHTML = filtered.map(h =>
+    '<button class="hotel-chip" onclick="selectHotel(\'' + h.replace(/'/g, "\\'") + '\')">' + escapeHtml(h) + '</button>'
   ).join('');
 }
 
 function selectHotel(name) {
   document.getElementById('hotelName').value = name;
-  toggleHotelList(false);
+  closeHotelList();
 }
 
-function toggleHotelList(forceClose) {
+function toggleHotelList() {
   const section = document.getElementById('hotelListSection');
-  if (forceClose === false) {
-    section.classList.remove('open');
+  if (section.classList.contains('open')) {
+    closeHotelList();
   } else {
-    section.classList.toggle('open');
-    if (section.classList.contains('open')) {
-      renderHotels();
-    }
+    section.classList.add('open');
+    renderHotels('');
   }
 }
 
-function filterHotels() {
-  const q = document.getElementById('hotelSearch').value;
-  renderHotels(q);
+function closeHotelList() {
+  document.getElementById('hotelListSection').classList.remove('open');
 }
+
+document.getElementById('hotelListHeader').addEventListener('click', toggleHotelList);
+document.getElementById('hotelSearch').addEventListener('input', function() { renderHotels(this.value); });
+document.getElementById('hotelAddBtn').addEventListener('click', addHotel);
+document.getElementById('hotelAddInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') addHotel(); });
 
 function addHotel() {
   const input = document.getElementById('hotelAddInput');
@@ -782,69 +256,133 @@ function addHotel() {
   if (!hotels.includes(name)) {
     hotels.push(name);
     saveHotels(hotels);
-    renderHotels();
+    renderHotels(document.getElementById('hotelSearch').value);
   }
   input.value = '';
 }
 
-document.getElementById('hotelAddInput')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') addHotel();
-});
-
-
-const apiKeyInput = document.getElementById('apiKey');
-const savedKey = localStorage.getItem('gemini_api_key');
-if (savedKey) apiKeyInput.value = savedKey;
-apiKeyInput.addEventListener('input', () => {
-  localStorage.setItem('gemini_api_key', apiKeyInput.value);
-});
-
+// ============================================================
+// キャラ選択
+// ============================================================
 let selectedChar = 'hitagi';
-
-function selectChar(btn) {
-  document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedChar = btn.dataset.char;
-}
-
 const charProfiles = {
   hitagi: {
     name: '戦場ヶ原ひたぎ',
-    prompt: `あなたは「戦場ヶ原ひたぎ」の口調でTikTok動画テキストを書く。
-特徴：クールで知的、毒舌混じりの語り口。感情を抑えつつも本質を突く言い回し。女性視点で書く。語尾はバリエーション豊かに「～なのよ」「～だわ」「～でしょ」「～かしら」「～よね」「～なのよね」「～だけどね」「～ってところね」を自然に混ぜる。体言止めは最小限にして、人が話すような語り口にする。`
+    endings: { price: 'だったわ', link: '確認なさい' },
+    prompt: 'あなたは「戦場ヶ原ひたぎ」の口調でTikTok動画テキストを書く。クールで知的、毒舌混じりの語り口。女性視点。語尾は「～なのよ」「～だわ」「～でしょ」「～かしら」「～よね」「～なのよね」「～だけどね」を自然に混ぜる。体言止め最小限。'
   },
   traveler: {
     name: '旅好き女子',
-    prompt: `あなたは旅好きな20代女性の口調でTikTok動画テキストを書く。
-特徴：テンション高め、共感を呼ぶ言葉選び。友達に話しかけるような親しみやすさ。女性視点で書く。語尾はバリエーション豊かに「～だよ」「～なんよ」「～じゃん」「～だよね」「～なんだけど」「～だったりする」「～なんよね」「～すぎる」「～ってなる」「～よね」を自然に混ぜる。体言止めは最小限にして、テンション高めの語り口にする。`
+    endings: { price: 'だったよ！', link: '確認してね！' },
+    prompt: 'あなたは旅好きな20代女性の口調でTikTok動画テキストを書く。テンション高め、共感系。女性視点。語尾は「～だよ」「～なんよ」「～じゃん」「～だよね」「～なんだけど」「～すぎる」「～ってなる」「～よね」を自然に混ぜる。体言止め最小限。'
   },
   business: {
     name: 'ビジネスウーマン',
-    prompt: `あなたはできるビジネスウーマンの口調でTikTok動画テキストを書く。
-特徴：無駄がなく端的。数字や事実を効果的に使う。説得力重視。忙しい女性に刺さる言葉。女性視点で書く。語尾はバリエーション豊かに「～なの」「～よ」「～ね」「～だから」「～なのよ」「～じゃない」「～なんだけど」「～てことね」「～でしょ」「～よね」を自然に混ぜる。体言止めは最小限にして、知的でテンポよい語り口にする。`
+    endings: { price: 'よ', link: '確認して' },
+    prompt: 'あなたはできるビジネスウーマンの口調でTikTok動画テキストを書く。端的、説得力重視。女性視点。語尾は「～なの」「～よ」「～ね」「～だから」「～じゃない」「～てことね」「～でしょ」を自然に混ぜる。体言止め最小限。'
   }
 };
 
-const loadingMessages = [
-  'ホテル情報を調べています...',
-  'ファクトチェック中...',
-  'TikTokテキスト生成中...',
-  '画面を組み立てています...'
-];
+document.querySelectorAll('.char-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    selectedChar = this.dataset.char;
+  });
+});
 
-let loadingInterval;
+// ============================================================
+// フレーズ時限管理
+// ============================================================
+const PHRASE_LIMIT = 10;
+const BANNED_ALWAYS = ['神ホテル', '最高すぎ', 'ヤバい', '神すぎ', '天国すぎ', 'レベチ', '沼った', '次元が違う'];
 
-function startLoading() {
-  let i = 0;
-  const el = document.getElementById('loadingText');
-  el.textContent = loadingMessages[0];
-  loadingInterval = setInterval(() => {
-    i = (i + 1) % loadingMessages.length;
-    el.textContent = loadingMessages[i];
-  }, 2500);
+function getPhraseLedger() {
+  try { return JSON.parse(localStorage.getItem('phrase_ledger') || '{}'); } catch { return {}; }
 }
 
-function stopLoading() { clearInterval(loadingInterval); }
+function recordPhrases(text) {
+  const ledger = getPhraseLedger();
+  const now = Date.now();
+  BANNED_ALWAYS.forEach(p => {
+    if (text.includes(p)) {
+      ledger[p] = (ledger[p] || []).concat(now);
+    }
+  });
+  localStorage.setItem('phrase_ledger', JSON.stringify(ledger));
+}
+
+function getBannedPhrases() {
+  const ledger = getPhraseLedger();
+  const banned = [...BANNED_ALWAYS];
+  Object.entries(ledger).forEach(([p, times]) => {
+    if (times.length > 0 && times.length < PHRASE_LIMIT && !banned.includes(p)) {
+      banned.push(p);
+    }
+  });
+  return banned;
+}
+
+// ============================================================
+// 料金検索（並行実行）
+// ============================================================
+async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
+  const priceCard = document.getElementById('priceCard');
+  if (!priceCard) return;
+
+  priceCard.innerHTML =
+    '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><span style="font-size:11px;color:var(--muted)">🔍 検索中...</span></div>' +
+    '<div class="screen-content price-loading">料金を検索しています...</div>';
+  priceCard.style.display = 'block';
+
+  try {
+    const pricePrompt = 'じゃらん・楽天トラベル・Booking.comで「' + hotelName + '」の' + checkIn + 'チェックイン' + checkOut + 'チェックアウト1名の最安値料金を検索して。料金のみを「PRICE:12000」の形式で返して。見つからなければ「PRICE:不明」と返して。';
+
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tools: [{ google_search: {} }],
+          contents: [{ role: 'user', parts: [{ text: pricePrompt }] }],
+          generationConfig: { maxOutputTokens: 100 }
+        })
+      }
+    );
+
+    const data = await res.json();
+    const text = (data.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
+    const matchArr = text.match(/PRICE:(\S+)/);
+    const price = matchArr ? matchArr[1] : '不明';
+    const end = charProfiles[charKey].endings;
+
+    let priceText;
+    if (price === '不明') {
+      priceText = '料金は公式サイトで\n確認してみてね\n最新価格はリンクから' + end.link;
+    } else {
+      priceText = '平日宿泊で一人' + price + '円' + end.price + '\n（料金は空室状況で変動します）\n最新価格はリンクから' + end.link;
+    }
+
+    priceCard.innerHTML =
+      '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><button class="btn-copy" onclick="copyById(\'price-text\', this)">📋 コピー</button></div>' +
+      '<div class="screen-content" id="price-text">' + escapeHtml(priceText) + '</div>';
+
+  } catch(e) {
+    priceCard.innerHTML =
+      '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span></div>' +
+      '<div class="screen-content price-loading">料金の取得に失敗しました</div>';
+  }
+}
+
+// ============================================================
+// テキスト生成
+// ============================================================
+const loadingMessages = ['ホテル情報を調べています...', 'ファクトチェック中...', 'TikTokテキスト生成中...', '画面を組み立てています...'];
+let loadingInterval;
+
+document.getElementById('generateBtn').addEventListener('click', generateText);
+document.getElementById('hotelName').addEventListener('keydown', e => { if (e.key === 'Enter') generateText(); });
 
 async function generateText() {
   const hotelName = document.getElementById('hotelName').value.trim();
@@ -861,80 +399,40 @@ async function generateText() {
   document.getElementById('loading').classList.add('show');
   document.getElementById('resultSection').classList.remove('show');
   document.getElementById('generateBtn').disabled = true;
-  startLoading();
+
+  let li = 0;
+  const ltEl = document.getElementById('loadingText');
+  ltEl.textContent = loadingMessages[0];
+  loadingInterval = setInterval(() => { li = (li + 1) % loadingMessages.length; ltEl.textContent = loadingMessages[li]; }, 2500);
+
+  // 翌週月曜火曜
+  const today = new Date();
+  const dow = today.getDay();
+  const daysToMon = dow === 0 ? 1 : 8 - dow;
+  const nextMon = new Date(today); nextMon.setDate(today.getDate() + daysToMon);
+  const nextTue = new Date(nextMon); nextTue.setDate(nextMon.getDate() + 1);
+  const fmt = d => d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+  const checkIn = fmt(nextMon);
+  const checkOut = fmt(nextTue);
 
   const char = charProfiles[selectedChar];
+  const banned = getBannedPhrases();
+  const bannedStr = banned.length > 0 ? '\n【禁止フレーズ】\n' + banned.map(p => '- ' + p).join('\n') + '\nこれらは絶対に使わないこと。' : '';
 
-  // 使用済みフレーズを取得
-const usedPhrases = getUsedPhrases();
-const bannedList = usedPhrases.length > 0 ? `\n【絶対に使わない表現リスト】\n${usedPhrases.map(p => '- ' + p).join('\n')}\nこれらは最近使い過ぎたので完全に禁止。代わりに新鮮な独自表現を使うこと。` : '';
+  const prompt = char.prompt + '\n\n【タスク】\nホテル名：' + hotelName + '\n\nまず' + hotelName + 'が2026年現在も営業しているか、最新のサービスや設備を確認してください。\n\n以下のルールで17画面分のテキストを生成してください。\n\n【ルール】\n- 口調は上記キャラクターに徹底して合わせる\n- 句読点（。、！？）は一切使わない\n- SNSのスマホユーザー視点最優先\n- 視聴者が「行きたい」と妄想できる強いパワーワードを使う\n- 各画面は3行\n- 1行は最大12文字以内（絶対に超えない）\n- 文字数の緩急をつける\n- 同じフレーズ・同じ言い回しを17画面で絶対に繰り返さない' + bannedStr + '\n\n【構成】\n- 1画面目：冒頭フック\n- 2画面目：ホテル名と概要\n- 3〜16画面目：設備・部屋・サービス・ロケーションなど\n- 17画面目：締め・CTA\n\n【出力形式】\n===SCREEN_1===\nTITLE:冒頭フック\nTEXT:\n（3行）\n\n以下17画面まで同様。必ず17画面全部出力してください。';
 
-// 翌週の月曜日と火曜日を計算
-const today = new Date();
-const dayOfWeek = today.getDay();
-const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
-const nextMonday = new Date(today);
-nextMonday.setDate(today.getDate() + daysUntilMonday);
-const nextTuesday = new Date(nextMonday);
-nextTuesday.setDate(nextMonday.getDate() + 1);
-const formatDate = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-const checkIn = formatDate(nextMonday);
-const checkOut = formatDate(nextTuesday);
-
-// 料金検索を裏で並行実行
-fetchPrice(hotelName, checkIn, checkOut, apiKey, char);
-
-const prompt = `${char.prompt}
-
-【タスク】
-ホテル名：${hotelName}
-
-まず${hotelName}が2026年現在も営業しているか、最新のサービスや設備を確認してください。
-
-以下のルールで17画面分のテキストを生成してください（料金画面は別途自動挿入されます）。
-
-【ルール】
-- 口調は上記キャラクターに徹底して合わせる
-- 句読点（。、！？）は一切使わない
-- 文末は語り口調の語尾か改行で終わる
-- SNSのスマホユーザー視点最優先
-- 視聴者が「行きたい」と妄想できる強いパワーワードを使う
-- 各画面は3行
-- 1行は最大12文字以内（絶対に超えない）
-- 文字数の緩急をつける（短い行・長い行を混ぜる）
-- 同じフレーズ・同じ言い回しを17画面で絶対に繰り返さない
-- 類似表現も避け、毎回新鮮な言葉を選ぶ
-- 前置き一切不要、いきなり画面から始める
-- 「神ホテル」「最高すぎ」「ヤバい」「神すぎ」「天国」のような使い古された表現は禁止${bannedList}
-
-【構成】
-- 1画面目：冒頭フック（インパクト重視、視聴者を止める一言）
-- 2画面目：ホテル名と概要
-- 3〜16画面目：設備・部屋・サービス・ロケーションなど詳細紹介
-- 17画面目：締め・CTA
-
-【出力形式】
-===SCREEN_1===
-TITLE:冒頭フック
-TEXT:
-（3行のテキスト）
-
-===SCREEN_2===
-TITLE:ホテル概要
-TEXT:
-（3行のテキスト）
-
-（以下17画面まで同様）
-
-必ず17画面全部出力してください。`;
+  // 料金検索を裏で開始
+  fetchPrice(hotelName, checkIn, checkOut, apiKey, selectedChar);
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    const tid = setTimeout(() => controller.abort(), 60000);
+
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
       {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tools: [{ google_search: {} }],
@@ -943,29 +441,28 @@ TEXT:
         })
       }
     );
+    clearTimeout(tid);
 
-    clearTimeout(timeoutId);
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || `APIエラー: ${response.status}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ? err.error.message : 'APIエラー: ' + res.status);
     }
 
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts
-      ?.filter(p => p.text)
-      ?.map(p => p.text)
-      ?.join('') || '';
+    const data = await res.json();
+    const text = (data.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
     if (!text) throw new Error('テキストが生成されませんでした');
-    parseAndDisplay(hotelName, text);
 
-  } catch (e) {
+    parseAndDisplay(hotelName, text);
+    recordPhrases(text);
+
+  } catch(e) {
     if (e.name === 'AbortError') {
-      showError('タイムアウト：時間がかかりすぎました。もう一度試してください');
+      showError('タイムアウト：もう一度試してください');
     } else {
       showError('エラー: ' + e.message);
     }
   } finally {
-    stopLoading();
+    clearInterval(loadingInterval);
     document.getElementById('loading').classList.remove('show');
     document.getElementById('generateBtn').disabled = false;
   }
@@ -974,25 +471,17 @@ TEXT:
 function parseAndDisplay(hotelName, rawText) {
   const screens = [];
   const blocks = rawText.split(/===SCREEN_\d+===/);
-
   for (let block of blocks) {
     block = block.trim();
     if (!block) continue;
-    const titleMatch = block.match(/TITLE:(.+)/);
-    const textMatch = block.match(/TEXT:\n([\s\S]+)/);
-    if (titleMatch && textMatch) {
-      screens.push({ title: titleMatch[1].trim(), text: textMatch[1].trim() });
-    }
+    const tm = block.match(/TITLE:(.+)/);
+    const cm = block.match(/TEXT:\n([\s\S]+)/);
+    if (tm && cm) screens.push({ title: tm[1].trim(), text: cm[1].trim() });
   }
+  if (screens.length === 0) { showError('テキストの解析に失敗しました。もう一度試してください。'); return; }
 
-  if (screens.length === 0) {
-    showError('テキストの解析に失敗しました。もう一度試してください。');
-    return;
-  }
-
-  const char = charProfiles[selectedChar];
   document.getElementById('resultHotelName').textContent = hotelName;
-  document.getElementById('resultCharBadge').textContent = char.name;
+  document.getElementById('resultCharBadge').textContent = charProfiles[selectedChar].name;
 
   const grid = document.getElementById('screensGrid');
   grid.innerHTML = '';
@@ -1000,19 +489,15 @@ function parseAndDisplay(hotelName, rawText) {
   screens.forEach((screen, i) => {
     const card = document.createElement('div');
     card.className = 'screen-card';
-    card.style.animationDelay = `${i * 0.04}s`;
-    card.innerHTML = `
-      <div class="screen-header">
-        <span class="screen-num">SCREEN ${String(i+1).padStart(2,'0')}</span>
-        <span class="screen-title">${escapeHtml(screen.title)}</span>
-        <button class="btn-copy" onclick="copyScreen(this, ${i})">📋 コピー</button>
-      </div>
-      <div class="screen-content" id="screen-text-${i}">${escapeHtml(screen.text)}</div>
-    `;
+    card.style.animationDelay = (i * 0.04) + 's';
+    const id = 'screen-text-' + i;
+    card.innerHTML =
+      '<div class="screen-header"><span class="screen-num">SCREEN ' + String(i+1).padStart(2,'0') + '</span><span class="screen-title">' + escapeHtml(screen.title) + '</span><button class="btn-copy" onclick="copyById(\'' + id + '\', this)">📋 コピー</button></div>' +
+      '<div class="screen-content" id="' + id + '">' + escapeHtml(screen.text) + '</div>';
     grid.appendChild(card);
   });
 
-  // 料金カードを追加
+  // 料金カード追加
   const priceCard = document.createElement('div');
   priceCard.className = 'screen-card';
   priceCard.id = 'priceCard';
@@ -1021,13 +506,14 @@ function parseAndDisplay(hotelName, rawText) {
 
   document.getElementById('resultSection').classList.add('show');
   document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  
-  // 使用フレーズを記録
-  recordPhrases(rawText);
 }
 
-function copyScreen(btn, index) {
-  const el = document.getElementById(`screen-text-${index}`);
+// ============================================================
+// ユーティリティ
+// ============================================================
+function copyById(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
   navigator.clipboard.writeText(el.textContent).then(() => {
     btn.textContent = '✓ 完了';
     btn.classList.add('copied');
@@ -1035,16 +521,15 @@ function copyScreen(btn, index) {
   });
 }
 
-function copyAll() {
+document.getElementById('copyAllBtn').addEventListener('click', function() {
   const cards = document.querySelectorAll('.screen-content');
   let all = '';
-  cards.forEach((el, i) => { all += `【画面${i+1}】\n${el.textContent}\n\n`; });
+  cards.forEach((el, i) => { all += '【画面' + (i+1) + '】\n' + el.textContent + '\n\n'; });
   navigator.clipboard.writeText(all.trim()).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓ 完了！';
-    setTimeout(() => { btn.textContent = '📋 全部コピー'; }, 2000);
+    this.textContent = '✓ 完了！';
+    setTimeout(() => { this.textContent = '📋 全部コピー'; }, 2000);
   });
-}
+});
 
 function showError(msg) {
   const el = document.getElementById('errorBox');
@@ -1057,10 +542,6 @@ function hideError() { document.getElementById('errorBox').classList.remove('sho
 function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-document.getElementById('hotelName').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') generateText();
-});
 </script>
 </body>
 </html>

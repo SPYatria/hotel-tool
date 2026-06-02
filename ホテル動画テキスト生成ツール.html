@@ -421,9 +421,6 @@ async function generateText() {
 
   const prompt = char.prompt + '\n\n【タスク】\nホテル名：' + hotelName + '\n\nまず' + hotelName + 'が2026年現在も営業しているか、最新のサービスや設備を確認してください。\n\n以下のルールで17画面分のテキストを生成してください。\n\n【ルール】\n- 口調は上記キャラクターに徹底して合わせる\n- 句読点（。、！？）は一切使わない\n- SNSのスマホユーザー視点最優先\n- 視聴者が「行きたい」と妄想できる強いパワーワードを使う\n- 各画面は3行\n- 1行は最大12文字以内（絶対に超えない）\n- 文字数の緩急をつける\n- 同じフレーズ・同じ言い回しを17画面で絶対に繰り返さない' + bannedStr + '\n\n【構成】\n- 1画面目：冒頭フック\n- 2画面目：ホテル名と概要\n- 3〜16画面目：設備・部屋・サービス・ロケーションなど\n- 17画面目：締め・CTA\n\n【出力形式】\n===SCREEN_1===\nTITLE:冒頭フック\nTEXT:\n（3行）\n\n以下17画面まで同様。必ず17画面全部出力してください。';
 
-  // 料金検索を裏で開始
-  fetchPrice(hotelName, checkIn, checkOut, apiKey, selectedChar);
-
   try {
     const controller = new AbortController();
     const tid = setTimeout(() => controller.abort(), 60000);
@@ -454,6 +451,8 @@ async function generateText() {
 
     parseAndDisplay(hotelName, text);
     recordPhrases(text);
+    // 本文表示後に料金検索開始
+    fetchPrice(hotelName, checkIn, checkOut, apiKey, selectedChar);
 
   } catch(e) {
     if (e.name === 'AbortError') {

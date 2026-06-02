@@ -552,7 +552,7 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, char) {
 
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.filter(p => p.text)?.map(p => p.text)?.join('') || '';
-    const match = text.match(/PRICE:([^\s
+    const match = text.match(/PRICE:([^\s\n]+)/);
 ]+)/);
     const price = match ? match[1] : '不明';
 

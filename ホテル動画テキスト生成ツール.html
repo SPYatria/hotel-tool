@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -25,6 +26,7 @@
   .api-section[open] summary { color: var(--text); margin-bottom: 12px; }
   .api-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 13px; outline: none; }
   .api-input:focus { border-color: var(--accent); }
+  .api-input + .api-input { margin-top: 8px; }
   .hotel-list-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
   .hotel-list-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
   .hotel-list-header label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; cursor: pointer; pointer-events: none; }
@@ -89,8 +91,10 @@
 
 <details class="api-section" id="apiSection">
   <summary>APIキー設定（初回のみ）</summary>
-  <input type="password" class="api-input" id="apiKey" placeholder="AIza..." autocomplete="off" />
-  <div style="margin-top:8px;font-size:12px;color:var(--muted)">Gemini APIキーを入力。次回から自動読み込みされます。</div>
+  <input type="password" class="api-input" id="apiKey" placeholder="AIza... (Gemini APIキー)" autocomplete="off" />
+  <input type="password" class="api-input" id="rakutenAppId" placeholder="楽天 アプリID (eaa2...)" autocomplete="off" style="margin-top:10px;" />
+  <input type="password" class="api-input" id="rakutenAffId" placeholder="楽天 アフィリエイトID (5471...)" autocomplete="off" style="margin-top:8px;" />
+  <div style="margin-top:8px;font-size:12px;color:var(--muted)">各APIキーを入力。次回から自動読み込みされます。</div>
 </details>
 
 <div class="hotel-list-section" id="hotelListSection">
@@ -155,7 +159,7 @@
   <div class="screens-grid" id="screensGrid"></div>
 </div>
 
-<div class="footer">punyopunyo hotel tool v4.0 (Gemini)</div>
+<div class="footer">punyopunyo hotel tool v5.0 (Gemini + 楽天トラベルAPI)</div>
 
 <script>
 // ============================================================
@@ -165,6 +169,15 @@ const apiKeyEl = document.getElementById('apiKey');
 const savedKey = localStorage.getItem('gemini_api_key');
 if (savedKey) apiKeyEl.value = savedKey;
 apiKeyEl.addEventListener('input', () => localStorage.setItem('gemini_api_key', apiKeyEl.value));
+
+const rakutenAppIdEl = document.getElementById('rakutenAppId');
+const rakutenAffIdEl = document.getElementById('rakutenAffId');
+const savedRakutenAppId = localStorage.getItem('rakuten_app_id');
+const savedRakutenAffId = localStorage.getItem('rakuten_aff_id');
+if (savedRakutenAppId) rakutenAppIdEl.value = savedRakutenAppId;
+if (savedRakutenAffId) rakutenAffIdEl.value = savedRakutenAffId;
+rakutenAppIdEl.addEventListener('input', () => localStorage.setItem('rakuten_app_id', rakutenAppIdEl.value));
+rakutenAffIdEl.addEventListener('input', () => localStorage.setItem('rakuten_aff_id', rakutenAffIdEl.value));
 
 // ============================================================
 // ホテルリスト
@@ -324,55 +337,95 @@ function getBannedPhrases() {
 }
 
 // ============================================================
-// 料金検索（並行実行）
+// 料金検索（楽天トラベルAPI → Geminiフォールバック）
 // ============================================================
 async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
   const priceCard = document.getElementById('priceCard');
   if (!priceCard) return;
 
   priceCard.innerHTML =
-    '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><span style="font-size:11px;color:var(--muted)">🔍 検索中...</span></div>' +
-    '<div class="screen-content price-loading">料金を検索しています...</div>';
+    '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><span style="font-size:11px;color:var(--muted)">🔍 楽天で検索中...</span></div>' +
+    '<div class="screen-content price-loading">楽天トラベルで料金を検索しています...</div>';
   priceCard.style.display = 'block';
 
+  const appId = localStorage.getItem('rakuten_app_id') || '';
+  const affId = localStorage.getItem('rakuten_aff_id') || '';
+  const end = charProfiles[charKey].endings;
+
   try {
-    const pricePrompt = hotelName + 'の' + checkIn + 'チェックイン' + checkOut + 'チェックアウト1名の最安値をじゃらんか楽天トラベルで検索してください。料金が見つかったら「PRICE:数字のみ」の形式だけで返してください。例：PRICE:8500。見つからない場合はPRICE:不明とだけ返してください。他の文章は一切不要です。';
+    if (!appId) throw new Error('楽天アプリIDが未設定');
 
-    const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tools: [{ google_search: {} }],
-          contents: [{ role: 'user', parts: [{ text: pricePrompt }] }],
-          generationConfig: { maxOutputTokens: 100 }
-        })
-      }
-    );
+    // 楽天トラベル SimpleHotelSearch API
+    const searchUrl = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426' +
+      '?applicationId=' + encodeURIComponent(appId) +
+      (affId ? '&affiliateId=' + encodeURIComponent(affId) : '') +
+      '&keyword=' + encodeURIComponent(hotelName) +
+      '&hits=1&formatVersion=2';
 
+    const res = await fetch(searchUrl);
+    if (!res.ok) throw new Error('楽天API error: ' + res.status);
     const data = await res.json();
-    const text = (data.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
-    console.log('Price response:', text);
-    const matchArr = text.match(/PRICE[:\s]+([\d,，]+|不明)/);
-    const price = matchArr ? matchArr[1].replace(/[,，]/g, '') : '不明';
-    const end = charProfiles[charKey].endings;
 
     let priceText;
-    if (price === '不明') {
-      priceText = '料金は公式サイトで\n確認してみてね\n最新価格はリンクから' + end.link;
+
+    if (data.hotels && data.hotels.length > 0) {
+      const info = data.hotels[0].hotelBasicInfo;
+      const minCharge = info.hotelMinCharge;
+
+      if (minCharge && minCharge > 0) {
+        const priceNum = parseInt(minCharge).toLocaleString('ja-JP');
+        priceText = '最安' + priceNum + '円〜' + end.price + '\n（料金は空室状況で変動）\n最新価格はリンクから' + end.link;
+      } else {
+        priceText = '料金は公式サイトで\n確認してみてね\n最新価格はリンクから' + end.link;
+      }
     } else {
-      priceText = '平日宿泊で一人' + price + '円' + end.price + '\n（料金は空室状況で変動します）\n最新価格はリンクから' + end.link;
+      // ヒットしなかった場合はGeminiフォールバック
+      throw new Error('楽天に該当ホテルなし');
     }
 
     priceCard.innerHTML =
-      '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><button class="btn-copy" onclick="copyById(\'price-text\', this)">📋 コピー</button></div>' +
+      '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報 <span style="color:var(--success);font-size:10px;">楽天取得</span></span><button class="btn-copy" onclick="copyById(\'price-text\', this)">📋 コピー</button></div>' +
       '<div class="screen-content" id="price-text">' + escapeHtml(priceText) + '</div>';
 
   } catch(e) {
-    priceCard.innerHTML =
-      '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span></div>' +
-      '<div class="screen-content price-loading">料金の取得に失敗しました</div>';
+    console.warn('楽天API失敗、Geminiで検索:', e.message);
+
+    // Geminiフォールバック
+    try {
+      const pricePrompt = hotelName + 'の最安宿泊料金を検索してください。料金が見つかったら「PRICE:数字のみ」の形式だけで返してください。例：PRICE:8500。見つからない場合はPRICE:不明とだけ返してください。他の文章は一切不要です。';
+      const res2 = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tools: [{ google_search: {} }],
+            contents: [{ role: 'user', parts: [{ text: pricePrompt }] }],
+            generationConfig: { maxOutputTokens: 100 }
+          })
+        }
+      );
+      const d2 = await res2.json();
+      const t2 = (d2.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
+      const m2 = t2.match(/PRICE[:\s]+([\d,，]+|不明)/);
+      const price2 = m2 ? m2[1].replace(/[,，]/g, '') : '不明';
+
+      let priceText2;
+      if (price2 === '不明') {
+        priceText2 = '料金は公式サイトで\n確認してみてね\n最新価格はリンクから' + end.link;
+      } else {
+        priceText2 = '平日一人' + price2 + '円〜' + end.price + '\n（料金は空室状況で変動）\n最新価格はリンクから' + end.link;
+      }
+
+      priceCard.innerHTML =
+        '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報 <span style="color:var(--muted);font-size:10px;">Gemini取得</span></span><button class="btn-copy" onclick="copyById(\'price-text\', this)">📋 コピー</button></div>' +
+        '<div class="screen-content" id="price-text">' + escapeHtml(priceText2) + '</div>';
+
+    } catch(e2) {
+      priceCard.innerHTML =
+        '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span></div>' +
+        '<div class="screen-content price-loading">料金の取得に失敗しました</div>';
+    }
   }
 }
 
@@ -447,7 +500,6 @@ async function generateText() {
     }
 
     const data = await res.json();
-    console.log('Gemini response:', JSON.stringify(data).substring(0, 500));
     let text = '';
     if (data.candidates && data.candidates.length > 0) {
       const cand = data.candidates[0];
@@ -455,14 +507,10 @@ async function generateText() {
         text = cand.content.parts.filter(p => p.text).map(p => p.text).join('');
       }
     }
-    if (!text) {
-      console.log('Full response:', JSON.stringify(data));
-      throw new Error('テキストが生成されませんでした');
-    }
+    if (!text) throw new Error('テキストが生成されませんでした');
 
     parseAndDisplay(hotelName, text);
     recordPhrases(text);
-    // 本文表示後に料金検索開始
     fetchPrice(hotelName, checkIn, checkOut, apiKey, selectedChar);
 
   } catch(e) {
@@ -507,7 +555,6 @@ function parseAndDisplay(hotelName, rawText) {
     grid.appendChild(card);
   });
 
-  // 料金カード追加
   const priceCard = document.createElement('div');
   priceCard.className = 'screen-card';
   priceCard.id = 'priceCard';

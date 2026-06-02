@@ -742,12 +742,29 @@ async function generateText() {
 
   const char = charProfiles[selectedChar];
 
-  const prompt = `${char.prompt}
+  // 使用済みフレーズを取得
+const usedPhrases = getUsedPhrases();
+const bannedList = usedPhrases.length > 0 ? `\n【絶対に使わない表現リスト】\n${usedPhrases.map(p => '- ' + p).join('\n')}\nこれらは最近使い過ぎたので完全に禁止。代わりに新鮮な独自表現を使うこと。` : '';
+
+// 翌週の月曜日と火曜日を計算
+const today = new Date();
+const dayOfWeek = today.getDay();
+const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+const nextMonday = new Date(today);
+nextMonday.setDate(today.getDate() + daysUntilMonday);
+const nextTuesday = new Date(nextMonday);
+nextTuesday.setDate(nextMonday.getDate() + 1);
+const formatDate = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+const checkIn = formatDate(nextMonday);
+const checkOut = formatDate(nextTuesday);
+
+const prompt = `${char.prompt}
 
 【タスク】
 ホテル名：${hotelName}
 
-まず${hotelName}が2026年現在も営業しているか、最新のサービスや設備を確認してください。
+まず${hotelName}が2026年現在も営業しているか確認してください。
+次にじゃらんか楽天トラベルで「${hotelName} ${checkIn} チェックイン ${checkOut} チェックアウト 1名」で検索して最安値の料金を必ず取得してください。料金が見つからない場合は公式サイトやBooking.comなど他のサイトでも探してください。
 
 以下のルールで18画面分のテキストを生成してください。
 
@@ -763,11 +780,25 @@ async function generateText() {
 - 同じフレーズ・同じ言い回しを18画面で絶対に繰り返さない
 - 類似表現も避け、毎回新鮮な言葉を選ぶ
 - 前置き一切不要、いきなり画面から始める
+- 「神ホテル」「最高すぎ」「ヤバい」「神すぎ」「天国」のような使い古された表現は禁止${bannedList}
 
 【構成】
 - 1画面目：冒頭フック（インパクト重視、視聴者を止める一言）
 - 2画面目：ホテル名と概要
-- 3〜18画面目：設備・部屋・サービス・ロケーションなど詳細紹介
+- 3〜16画面目：設備・部屋・サービス・ロケーションなど詳細紹介
+- 17画面目：料金情報（必須・以下のフォーマットを厳守）
+- 18画面目：締め・CTA
+
+【17画面目の料金フォーマット】
+キャラクターの口調で以下3行を生成すること：
+1行目：「平日宿泊で一人[取得した料金]円[キャラ語尾]」
+2行目：「（料金は空室状況で変動します）」
+3行目：「最新価格はリンクから確認[キャラ語尾]」
+
+語尾の例：
+- 戦場ヶ原ひたぎ → 「〜だったわ」「〜なさい」「〜よ」
+- 旅好き女子 → 「〜だったよ！」「〜してね！」「〜なんよ」
+- ビジネスウーマン → 「〜よ」「〜して」「〜なの」
 
 【出力形式】
 ===SCREEN_1===
@@ -782,7 +813,7 @@ TEXT:
 
 （以下18画面まで同様）
 
-必ず18画面全部出力してください。`;
+必ず18画面全部出力してください。料金画面は絶対にスキップしないこと。`;
 
   try {
     const response = await fetch(
@@ -863,6 +894,9 @@ function parseAndDisplay(hotelName, rawText) {
 
   document.getElementById('resultSection').classList.add('show');
   document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  
+  // 使用フレーズを記録
+  recordPhrases(rawText);
 }
 
 function copyScreen(btn, index) {

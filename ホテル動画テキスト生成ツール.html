@@ -516,6 +516,85 @@
 
 <script>
 
+
+// ============================================================
+// 料金検索（裏で並行実行）
+// ============================================================
+async function fetchPrice(hotelName, checkIn, checkOut, apiKey, char) {
+  const priceCard = document.getElementById('priceCard');
+  if (priceCard) {
+    priceCard.innerHTML = `
+      <div class="screen-header">
+        <span class="screen-num">SCREEN 18</span>
+        <span class="screen-title">料金情報</span>
+        <span style="font-size:11px;color:var(--muted)">🔍 検索中...</span>
+      </div>
+      <div class="screen-content" style="color:var(--muted);font-size:13px">料金を検索しています...</div>
+    `;
+    priceCard.style.display = 'block';
+  }
+
+  try {
+    const pricePrompt = `じゃらん・楽天トラベル・Booking.comなどで「${hotelName}」の${checkIn}チェックイン${checkOut}チェックアウト1名の最安値料金を検索してください。料金を必ず数字で返してください。料金のみを「PRICE:12000」のような形式で返してください。見つからない場合は「PRICE:不明」と返してください。`;
+
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tools: [{ google_search: {} }],
+          contents: [{ role: 'user', parts: [{ text: pricePrompt }] }],
+          generationConfig: { maxOutputTokens: 200 }
+        })
+      }
+    );
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.filter(p => p.text)?.map(p => p.text)?.join('') || '';
+    const match = text.match(/PRICE:([^\s
+]+)/);
+    const price = match ? match[1] : '不明';
+
+    const charKey = char.name === '戦場ヶ原ひたぎ' ? 'hitagi' : char.name === '旅好き女子' ? 'traveler' : 'business';
+    const endings = {
+      hitagi: { price: 'だったわ', link: '確認なさい' },
+      traveler: { price: 'だったよ！', link: '確認してね！' },
+      business: { price: 'よ', link: '確認して' }
+    };
+    const end = endings[charKey];
+
+    let priceText;
+    if (price === '不明') {
+      priceText = '料金は公式サイトで
+確認してみてね
+最新価格はリンクから' + end.link;
+    } else {
+      priceText = '平日宿泊で一人' + price + '円' + end.price + '
+（料金は空室状況で変動します）
+最新価格はリンクから' + end.link;
+    }
+
+    if (priceCard) {
+      priceCard.innerHTML = '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span><button class="btn-copy" onclick="copyPriceScreen(this)">📋 コピー</button></div><div class="screen-content" id="price-text">' + escapeHtml(priceText) + '</div>';
+    }
+  } catch(e) {
+    if (priceCard) {
+      priceCard.innerHTML = '<div class="screen-header"><span class="screen-num">SCREEN 18</span><span class="screen-title">料金情報</span></div><div class="screen-content" style="color:var(--muted);font-size:13px">料金の取得に失敗しました</div>';
+    }
+  }
+}
+
+function copyPriceScreen(btn) {
+  const el = document.getElementById('price-text');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    btn.textContent = '✓ 完了';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
 // ============================================================
 // フレーズ時限付き禁止管理
 // ============================================================

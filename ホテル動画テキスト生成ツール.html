@@ -336,7 +336,7 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
   priceCard.style.display = 'block';
 
   try {
-    const pricePrompt = 'じゃらん・楽天トラベル・Booking.comで「' + hotelName + '」の' + checkIn + 'チェックイン' + checkOut + 'チェックアウト1名の最安値料金を検索して。料金のみを「PRICE:12000」の形式で返して。見つからなければ「PRICE:不明」と返して。';
+    const pricePrompt = hotelName + 'の' + checkIn + 'チェックイン' + checkOut + 'チェックアウト1名の最安値をじゃらんか楽天トラベルで検索してください。料金が見つかったら「PRICE:数字のみ」の形式だけで返してください。例：PRICE:8500。見つからない場合はPRICE:不明とだけ返してください。他の文章は一切不要です。';
 
     const res = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey,
@@ -353,8 +353,9 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
 
     const data = await res.json();
     const text = (data.candidates || []).map(c => (c.content.parts || []).filter(p => p.text).map(p => p.text).join('')).join('');
-    const matchArr = text.match(/PRICE:(\S+)/);
-    const price = matchArr ? matchArr[1] : '不明';
+    console.log('Price response:', text);
+    const matchArr = text.match(/PRICE[:\s]+([\d,，]+|不明)/);
+    const price = matchArr ? matchArr[1].replace(/[,，]/g, '') : '不明';
     const end = charProfiles[charKey].endings;
 
     let priceText;

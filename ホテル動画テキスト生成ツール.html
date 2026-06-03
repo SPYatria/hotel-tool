@@ -93,6 +93,7 @@
   <input type="password" class="api-input" id="apiKey" placeholder="AIza... (Gemini APIキー)" autocomplete="off" />
   <input type="password" class="api-input" id="rakutenAppId" placeholder="楽天 アプリID (eaa2...)" autocomplete="off" style="margin-top:10px;" />
   <input type="password" class="api-input" id="rakutenAffId" placeholder="楽天 アフィリエイトID (5471...)" autocomplete="off" style="margin-top:8px;" />
+  <input type="password" class="api-input" id="rakutenAccessKey" placeholder="楽天 アクセスキー (pk_...)" autocomplete="off" style="margin-top:8px;" />
   <div style="margin-top:8px;font-size:12px;color:var(--muted)">各APIキーを入力。次回から自動読み込みされます。</div>
 </details>
 
@@ -177,6 +178,11 @@ if (savedRakutenAppId) rakutenAppIdEl.value = savedRakutenAppId;
 if (savedRakutenAffId) rakutenAffIdEl.value = savedRakutenAffId;
 rakutenAppIdEl.addEventListener('input', () => localStorage.setItem('rakuten_app_id', rakutenAppIdEl.value));
 rakutenAffIdEl.addEventListener('input', () => localStorage.setItem('rakuten_aff_id', rakutenAffIdEl.value));
+
+const rakutenAccessKeyEl = document.getElementById('rakutenAccessKey');
+const savedRakutenAccessKey = localStorage.getItem('rakuten_access_key');
+if (savedRakutenAccessKey) rakutenAccessKeyEl.value = savedRakutenAccessKey;
+rakutenAccessKeyEl.addEventListener('input', () => localStorage.setItem('rakuten_access_key', rakutenAccessKeyEl.value));
 
 // ============================================================
 // ホテルリスト
@@ -355,8 +361,10 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
     if (!appId) throw new Error('楽天アプリIDが未設定');
 
     // 楽天トラベル KeywordHotelSearch API
+    const rakutenAccessKey = localStorage.getItem('rakuten_access_key') || '';
     const searchUrl = 'https://app.rakuten.co.jp/services/api/Travel/KeywordHotelSearch/20170426' +
       '?applicationId=' + encodeURIComponent(appId) +
+      (rakutenAccessKey ? '&accessKey=' + encodeURIComponent(rakutenAccessKey) : '') +
       (affId ? '&affiliateId=' + encodeURIComponent(affId) : '') +
       '&keyword=' + encodeURIComponent(hotelName) +
       '&hits=1&formatVersion=2';

@@ -354,8 +354,8 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
   try {
     if (!appId) throw new Error('楽天アプリIDが未設定');
 
-    // 楽天トラベル SimpleHotelSearch API
-    const searchUrl = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426' +
+    // 楽天トラベル KeywordHotelSearch API
+    const searchUrl = 'https://app.rakuten.co.jp/services/api/Travel/KeywordHotelSearch/20170426' +
       '?applicationId=' + encodeURIComponent(appId) +
       (affId ? '&affiliateId=' + encodeURIComponent(affId) : '') +
       '&keyword=' + encodeURIComponent(hotelName) +
@@ -368,7 +368,8 @@ async function fetchPrice(hotelName, checkIn, checkOut, apiKey, charKey) {
     let priceText;
 
     if (data.hotels && data.hotels.length > 0) {
-      const info = data.hotels[0].hotelBasicInfo;
+      const hotelData = data.hotels[0].hotel;
+      const info = hotelData[0].hotelBasicInfo;
       const minCharge = info.hotelMinCharge;
 
       if (minCharge && minCharge > 0) {
